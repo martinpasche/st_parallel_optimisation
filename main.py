@@ -11,7 +11,7 @@ NbP = comm.Get_size()
 Me = comm.Get_rank()
 
 parameters = {
-    "is_display" : True,
+    "is_display" : False,
     "process" : Me,
     "folder_path" : "iso3dfd-st7",
 }
@@ -33,6 +33,21 @@ cache3_list = list(range(1, 65, 1))
 iterations_list = [100]
 threads_list = list(range(1, 65))
 
+if Me == 0:
+    print("Domain:\n")
+    print("O level:", Olevel_list)
+    print("Simd:", simd_list)
+    print("Problem size 1:", problem_size_list1)
+    print("Problem size 2:", problem_size_list2)
+    print("Problem size 3:", problem_size_list3)
+    print("Cache 1:", cache1_list)
+    print("Cache 2:", cache2_list)
+    print("Cache 3:", cache3_list)
+    print("Iterations:", iterations_list)
+    print("Threads:", threads_list)
+    print("\n")
+
+
 
 domain = Domain( Olevel_list, simd_list, problem_size_list1, problem_size_list2, problem_size_list3, cache1_list, cache2_list, cache3_list, threads_list, iterations_list)
 
@@ -51,8 +66,10 @@ def f_cost_gflops(S : Element) -> float:
 ############################### PROBLEM #############################
 #####################################################################
 
-    
-S_best, E_best, k = tabu_simulated_annealing(f_cost_time, domain, 10, 0.9, 10, k_max = 8)
+if Me == 0:
+    print("Tablu simulated annealing \n")
+S_best, E_best, k = tabu_simulated_annealing(f_cost_time, domain, temperature = 100, temp_decrease_factor= 0.95, tabu_length = 20, k_max = 400)
+
 mark = cost_function_benchmark(S_best, **parameters)
 
 

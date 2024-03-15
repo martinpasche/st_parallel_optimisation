@@ -25,19 +25,19 @@ class Element:
         self.code = code
         
     def __str__(self):
-        text = "[" + str(self.Olevel) + "\t" + str(self.simd) + " " \
-            + str(self.problem_size1) + " " + str(self.problem_size2) + " " + str(self.problem_size3) + " " \
-            + str(self.threads) + " " \
-            + str(self.iter) + " " \
-            + str(self.cache1) + " " + str(self.cache2) + " " + str(self.cache3) + "]"
+        text = "[" + str(self.Olevel).ljust(7) + str(self.simd).ljust(7) \
+            + str(self.problem_size1).ljust(4) + str(self.problem_size2).ljust(4) + str(self.problem_size3).ljust(4) \
+            + str(self.threads).ljust(3) \
+            + str(self.iter).ljust(4) \
+            + str(self.cache1).ljust(4) + str(self.cache2).ljust(4) + str(self.cache3).ljust(4) + "]"
         return text
     
     def __repr__(self) -> str:
-        text = "[" + str(self.Olevel) + "\t" + str(self.simd) + " " \
-            + str(self.problem_size1) + " " + str(self.problem_size2) + " " + str(self.problem_size3) + " " \
-            + str(self.threads) + " " \
-            + str(self.iter) + " " \
-            + str(self.cache1) + " " + str(self.cache2) + " " + str(self.cache3) + "]"
+        text = "[" + str(self.Olevel).ljust(7) + str(self.simd).ljust(7) \
+            + str(self.problem_size1).ljust(4) + str(self.problem_size2).ljust(4) + str(self.problem_size3).ljust(4) \
+            + str(self.threads).ljust(3) \
+            + str(self.iter).ljust(4) \
+            + str(self.cache1).ljust(4) + str(self.cache2).ljust(4) + str(self.cache3).ljust(4) + "]"
         return text
     
     
@@ -70,7 +70,7 @@ class BenchMarkValue:
             self.is_error = True
     
     def __str__(self):
-        return f"time: {self.time:.2f} s  |  throughput: {self.flops:.2f} Mpoints/s  |  flops: {self.flops:.2f} Gigaflops"
+        return f"time: " + str(f"{self.time:.2f}").ljust(5) + " s  |  throughput: " + str(f"{self.flops:.2f}").ljust(5) + " Mpoints/s  |  flops: " + str(f"{self.flops:.2f}").ljust(5) + " Gigaflops"
 
 
 
@@ -299,8 +299,7 @@ def cmdRunIso (element : Element = None, process = 0, is_display : bool = False)
         iterations += 1
         
     mark = BenchMarkValue(time, mpoints, flops, element)
-    if is_display:
-        display_element_process(element, process, mark)
+    display_element_process(element, process, mark)
     return mark
     
     

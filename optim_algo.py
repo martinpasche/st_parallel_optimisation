@@ -38,6 +38,10 @@ def tabu_simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], domai
 
     return S_best, E_best, k
     
+    
+    
+    
+    
 def simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], domain : Domain, temperature : float, temp_decrease_factor : float, k_max : int = 10):
     
     ########## Init variables #########
@@ -66,6 +70,8 @@ def simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], domain : D
 
     return S_best, E_best, k
 
+
+
 def basic_hill_climbing (f_cost : Callable[[Element], BenchMarkValue], domain : Domain,  k_max : int = 10):
     
     ########## Init variables #########
@@ -90,3 +96,4 @@ def basic_hill_climbing (f_cost : Callable[[Element], BenchMarkValue], domain : 
     return S_best, E_best, k
         
         
+    
