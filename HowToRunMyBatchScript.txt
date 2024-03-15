@@ -1,0 +1,7 @@
+#On Kyle or chome enter the command (in the directory where is the Batch Script): 
+
+sbatch -N 2 -n 64 -p cpu_prod --qos=8nodespu BatchScript2nodes
+
+# -n : 32xN
+# -p cpu_prod : use the partition "for production jobs"
+# --qos=8nodespu : max 8 nodes for one batch
