@@ -59,7 +59,7 @@ def f_cost_mpoints(S : Element) -> float:
     return cost_function_benchmark(S, **parameters).mpoints
 
 def f_cost_gflops(S : Element) -> float:
-    return cost_function_benchmark(S, **parameters).flops
+    return -cost_function_benchmark(S, **parameters).flops
 
 
 #####################################################################
@@ -68,10 +68,10 @@ def f_cost_gflops(S : Element) -> float:
 
 if Me == 0:
     print("Tablu simulated annealing \n")
-S_best, E_best, k = tabu_simulated_annealing(f_cost_time, domain, temperature = 100, temp_decrease_factor= 0.95, tabu_length = 20, k_max = 400)
+S_best, E_best, k = tabu_simulated_annealing(f_cost_gflops, domain, temperature = 100, temp_decrease_factor= 0.95, tabu_length = 20, k_max = 400)
 
 mark = cost_function_benchmark(S_best, **parameters)
-
+mark.k = k
 
 
 #####################################################################

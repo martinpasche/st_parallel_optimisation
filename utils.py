@@ -63,6 +63,7 @@ class BenchMarkValue:
         self.flops = float(flops)
         self.element = element
         self.is_error = False
+        self.k = k
         self.check_error()
         
     def check_error (self):
