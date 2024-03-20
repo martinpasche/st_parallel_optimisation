@@ -4,7 +4,10 @@ __pycache__/
 *$py.class
 
 iso3dfd-st7/
+<<<<<<< HEAD
 slurm-*
+=======
+>>>>>>> b29d495f328c15aaf7bc3cf84edf5b09fc486371
 
 # C extensions
 *.so
