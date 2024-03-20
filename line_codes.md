@@ -160,5 +160,5 @@ Running the iso file
 
 ## Check cache misses
 
->>>>>>> b29d495f328c15aaf7bc3cf84edf5b09fc486371
+    module load valgrind...
     valgrind --tool=cachegrind /usr/users/st76i/st76i_5/iso3dfd-st7/bin/iso3dfd_dev13_cpu_avx.exe

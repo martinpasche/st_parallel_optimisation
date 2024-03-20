@@ -1,5 +1,6 @@
-from utils import Element, Domain, BenchMarkValue, cost_function_benchmark, display_element_process, display_results, get_mark_max_gflops, get_mark_min_temp
-from optim_algo import basic_hill_climbing, tabu_simulated_annealing
+from utils import Element, Domain, BenchMarkValue
+from utils import cost_function_benchmark, display_element_process, display_results, get_mark_max_gflops, get_mark_min_temp
+from optim_algo import basic_hill_climbing, tabu_simulated_annealing, VNS
 
 
 from mpi4py import MPI
@@ -66,9 +67,11 @@ def f_cost_gflops(S : Element) -> float:
 ############################### PROBLEM #############################
 #####################################################################
 
-if Me == 0:
-    print("Tablu simulated annealing \n")
-S_best, E_best, k = tabu_simulated_annealing(f_cost_gflops, domain, temperature = 150, temp_decrease_factor= 0.95, tabu_length = 10, k_max = 300)
+#if Me == 0:
+#    print("Tablu simulated annealing \n")
+#S_best, E_best, k = tabu_simulated_annealing(f_cost_gflops, domain, temperature = 150, temp_decrease_factor= 0.95, tabu_length = 10, k_max = 300)
+
+S_best, E_best, k = VNS(f_cost_gflops, domain, HC_max_iter = 50, n_max = 8, global_max_iter = 10, tabu_list_size = 60)
 
 mark = cost_function_benchmark(S_best, **parameters)
 mark.k = k

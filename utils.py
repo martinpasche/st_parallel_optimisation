@@ -178,6 +178,24 @@ class Domain:
         
         #print(elements_filtered)
         return elements_filtered
+    
+    
+    
+    def VNS_neighborhood(self, element : Element, previous_neighbors : List[Element] = [], k=1):
+                
+        neighbors = self.get_small_neighborhood(element)
+                    
+        if k==1:
+            return neighbors
+        for neighbor in neighbors:
+            extended_neighbors = self.VNS_neighborhood(neighbor, [], k-1)
+            
+            for neighbor in extended_neighbors:
+                if neighbor not in neighbors:
+                    neighbors.append(neighbor)
+            
+        neighbors = [x for x in neighbors if x not in previous_neighbors]
+        return neighbors
                 
         
         
