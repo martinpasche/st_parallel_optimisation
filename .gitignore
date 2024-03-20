@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+iso3dfd-st7/
+
 # C extensions
 *.so
 
