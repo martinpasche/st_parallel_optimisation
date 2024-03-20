@@ -106,57 +106,57 @@ def basic_hill_climbing (f_cost : Callable[[Element], BenchMarkValue], domain : 
 
 def VNS(f_cost, domain : Domain, HC_max_iter, n_max, global_max_iter, tabu_list_size):
   
-  S = domain.get_random_element()
-  BestScore = f_cost(S)
-  print("BestScore = ", BestScore)
-  global_iter = 0
-  while global_iter<global_max_iter:
-    n = 1
-    current_score = BestScore
-    previous_neighbors = []
-    previously_visited = []
-    while n < n_max:
-      # Shake: Get an element from the neighborhood extended by n
-      print("S: ", S)
-      neighbors  = domain.VNS_neighborhood(S, previous_neighbors, n)
-      
-      for neighbor in neighbors:
-        if neighbor not in previous_neighbors:
-            previous_neighbors.append(neighbor)
-      
-      S_prime = random.choice(neighbors)
-      a = 0
-      while S_prime in previously_visited and a<7:
-        S_prime = random.choice(neighbors)
-        a += 1
-      if len(previously_visited)<tabu_list_size:
-        for element in domain.VNS_neighborhood(S):
-          previously_visited.append(element)
-      else:
-        for element in domain.VNS_neighborhood(S):
-          previously_visited.pop()
-          previously_visited.append(element)
-        
-      print("cost_function = ", f_cost(S_prime))
-      if f_cost(S_prime) < BestScore*0.62:
-        #Search: Find the best in the neighborhood of S_prime
-        S_prime_best, Local_BestScore, _ = basic_hill_climbing(f_cost, domain, S_prime, HC_max_iter)
-      else:
-        Local_BestScore = 0
-      print("Local_BestScore = ", Local_BestScore)
-      if Local_BestScore < BestScore:
-        S = S_prime_best
-        BestScore = Local_BestScore
+    S = domain.get_random_element()
+    BestScore = f_cost(S)
+    print("BestScore = ", BestScore)
+    global_iter = 0
+    while global_iter<global_max_iter:
         n = 1
+        current_score = BestScore
         previous_neighbors = []
-        print("New Best", BestScore)
-      else:
-        n += 1
-        print("n", n)
-    if BestScore == current_score:
-      break
-    else:
-      global_iter += 1
-      print("global_iter", global_iter)
-          
-  return S, BestScore, global_iter
+        previously_visited = []
+        while n < n_max:
+            # Shake: Get an element from the neighborhood extended by n
+            print("S: ", S)
+            neighbors  = domain.VNS_neighborhood(S, previous_neighbors, n)
+            
+            for neighbor in neighbors:
+                if neighbor not in previous_neighbors:
+                    previous_neighbors.append(neighbor)
+            
+            S_prime = random.choice(neighbors)
+            a = 0
+            while S_prime in previously_visited and a<7:
+                S_prime = random.choice(neighbors)
+                a += 1
+            if len(previously_visited)<tabu_list_size:
+                for element in domain.VNS_neighborhood(S):
+                    previously_visited.append(element)
+            else:
+                for element in domain.VNS_neighborhood(S):
+                    previously_visited.pop()
+                    previously_visited.append(element)
+              
+            print("cost_function = ", f_cost(S_prime))
+            if f_cost(S_prime) < BestScore*0.62:
+                #Search: Find the best in the neighborhood of S_prime
+                S_prime_best, Local_BestScore, _ = basic_hill_climbing(f_cost, domain, S_prime, HC_max_iter)
+            else:
+                Local_BestScore = 0
+            print("Local_BestScore = ", Local_BestScore)
+            if Local_BestScore < BestScore:
+                S = S_prime_best
+                BestScore = Local_BestScore
+                n = 1
+                previous_neighbors = []
+                print("New Best", BestScore)
+            else:
+              n += 1
+              print("n", n)
+        if BestScore == current_score:
+            break
+        else:
+            global_iter += 1
+            print("global_iter", global_iter)
+              
+    return S, BestScore, global_iter
