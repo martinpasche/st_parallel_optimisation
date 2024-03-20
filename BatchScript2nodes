@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=4
+#SBATCH --time=120
 
 # The line SBATCH --time=4 means: max exec time of the batch is 4 minutes
 # When developping and debuging: use small test and small time limits

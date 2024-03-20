@@ -63,7 +63,7 @@ class BenchMarkValue:
         self.flops = float(flops)
         self.element = element
         self.is_error = False
-        self.k = k
+        self.k = 0
         self.check_error()
         
     def check_error (self):
@@ -190,7 +190,7 @@ def display_element_process (element : Element, process = -1, content = ""):
 def display_results (marks : List[BenchMarkValue] = []):
     print("\nDisplaying the best solution of each node\n")
     for mark in marks:
-        print(mark.element, mark)
+        print(mark.element, mark, " Iter:", mark.k)
     
     
 def get_mark_min_temp (marks : List[BenchMarkValue] = None) -> BenchMarkValue:

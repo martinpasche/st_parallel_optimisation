@@ -68,7 +68,7 @@ def f_cost_gflops(S : Element) -> float:
 
 if Me == 0:
     print("Tablu simulated annealing \n")
-S_best, E_best, k = tabu_simulated_annealing(f_cost_gflops, domain, temperature = 100, temp_decrease_factor= 0.95, tabu_length = 20, k_max = 400)
+S_best, E_best, k = tabu_simulated_annealing(f_cost_gflops, domain, temperature = 150, temp_decrease_factor= 0.95, tabu_length = 10, k_max = 300)
 
 mark = cost_function_benchmark(S_best, **parameters)
 mark.k = k
@@ -87,5 +87,5 @@ if marks:
     mark_max_gflops = get_mark_max_gflops(marks)
     
     print("")
-    print("Best time:\t\t", mark_min_time.element, mark_min_time)
+    print("Best time:\t", mark_min_time.element, mark_min_time)
     print("Highest GFlops:\t", mark_max_gflops.element, mark_max_gflops)

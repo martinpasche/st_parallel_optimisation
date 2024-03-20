@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 iso3dfd-st7/
+slurm-*
 
 # C extensions
 *.so
