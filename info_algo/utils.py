@@ -316,7 +316,7 @@ def get_output_info (result):
 #    return mark
 def cmdRunIso (element , process = 0, is_display : bool = False):
     #path = os.path.join("bin", f"iso3dfd_dev13_cpu_{element.simd}.exe")
-    path = f"~/iso3dfd-st7/bin/iso3dfd_dev13_cpu_avx512.exe"
+    path = f"~/iso3dfd-st7/bin/iso3dfd_dev13_cpu-Ofast_avx512.exe"
   
     cmd = path + " " \
             + str(element[0]) + " " + str(element[1]) + " " + str(element[2]) + " " \
