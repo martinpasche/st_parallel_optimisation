@@ -1,7 +1,7 @@
-from utils import Element, Domain, BenchMarkValue
-from utils import cost_function_benchmark, display_element_process, display_results, get_mark_max_gflops, get_mark_min_temp
-from optim_algo import basic_hill_climbing, tabu_simulated_annealing, VNS
+from utils import Element, Domain, BenchMarkValue, cost_function_benchmark, display_element_process, display_results, get_mark_max_gflops, get_mark_min_temp
+from optim_algo import retrieveMethod, basic_hill_climbing, tabu_simulated_annealing
 
+from run_session import RunSession
 
 from mpi4py import MPI
 import mpi4py
@@ -14,17 +14,16 @@ Me = comm.Get_rank()
 parameters = {
     "is_display" : False,
     "process" : Me,
-    "folder_path" : "iso3dfd-st7",
+    "folder_path" : "iso3dfd-st7"
 }
-
 
 #####################################################################
 ############################ INIT PROBLEM ###########################
 #####################################################################
 
 # We define the domain of the problema
-Olevel_list = ["-O3", "-Ofast"]
-simd_list = ["avx", "avx2", "avx512", "sse"]
+Olevel_list = ["-O3"]#, "-Ofast"]
+simd_list = ["avx512"]#, "avx2", "avx512", "sse"]
 problem_size_list1 = [256]
 problem_size_list2 = [256]
 problem_size_list3 = [256]
@@ -52,29 +51,18 @@ if Me == 0:
 
 domain = Domain( Olevel_list, simd_list, problem_size_list1, problem_size_list2, problem_size_list3, cache1_list, cache2_list, cache3_list, threads_list, iterations_list)
 
-#defining cost function for time, mpoints and gflops
-def f_cost_time(S : Element) -> float:
-    return cost_function_benchmark(S, **parameters).time
-    
-def f_cost_mpoints(S : Element) -> float:
-    return cost_function_benchmark(S, **parameters).mpoints
-
-def f_cost_gflops(S : Element) -> float:
-    return -cost_function_benchmark(S, **parameters).flops
-
+run_session = RunSession(parameters, domain)
 
 #####################################################################
 ############################### PROBLEM #############################
 #####################################################################
 
-#if Me == 0:
-#    print("Tablu simulated annealing \n")
-#S_best, E_best, k = tabu_simulated_annealing(f_cost_gflops, domain, temperature = 150, temp_decrease_factor= 0.95, tabu_length = 10, k_max = 300)
-
-S_best, E_best, k = VNS(f_cost_gflops, domain, HC_max_iter = 50, n_max = 8, global_max_iter = 10, tabu_list_size = 60)
+#S_best, E_best, k = tabu_simulated_annealing(f_cost_time, domain, temperature = 100, temp_decrease_factor= 0.95, tabu_length = 20, k_max = 400)
+S_best, E_best, k = run_session()
 
 mark = cost_function_benchmark(S_best, **parameters)
 mark.k = k
+
 
 
 #####################################################################
@@ -90,5 +78,5 @@ if marks:
     mark_max_gflops = get_mark_max_gflops(marks)
     
     print("")
-    print("Best time:\t", mark_min_time.element, mark_min_time)
+    print("Best time:\t\t", mark_min_time.element, mark_min_time)
     print("Highest GFlops:\t", mark_max_gflops.element, mark_max_gflops)

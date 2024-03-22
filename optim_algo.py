@@ -7,16 +7,29 @@ def random_pop (neighborhood : List[Element]) -> Element:
     index = random.randint(0, len(neighborhood) - 1)
     return neighborhood.pop(index)
 
+def retrieveMethod(method) :
+    if method == "hc" :
+        return basic_hill_climbing
+    elif method == "sa" :
+        return simulated_annealing
+    elif method == "tsa" :
+        return tabu_simulated_annealing
+    elif method == "vns" :
+        return VNS
+    elif method == "random" :
+        return random_elements
 
+def random_elements(f_cost : Callable[[Element], BenchMarkValue], starting_point : Element, domain : Domain, temperature : float, temp_decrease_factor : float,  tabu_length : int, k_max : int, HC_max_iter, n_max) :
+    elements = [domain.get_random_element() for _ in range(k_max)]
+    return sorted([(elem, f_cost(elem), k_max) for elem in elements], key=lambda tup : tup[1])[0]
 
-
-def tabu_simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], domain : Domain, temperature : float, temp_decrease_factor : float,  tabu_length : int, k_max : int = 10):
+def tabu_simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], starting_point : Element, domain : Domain, temperature : float, temp_decrease_factor : float,  tabu_length : int, k_max : int, HC_max_iter, n_max):
     
     ########## Init variables #########
     
     # We start from a random point
     tabu_list = []
-    S_best = domain.get_random_element()
+    S_best = starting_point
     E_best = f_cost(S_best)
     L_neigh = domain.get_small_neighborhood(S_best)
     k = 0
@@ -42,13 +55,13 @@ def tabu_simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], domai
     
     
     
-def simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], domain : Domain, temperature : float, temp_decrease_factor : float, k_max : int = 10):
+def simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], starting_point : Element, domain : Domain, temperature : float, temp_decrease_factor : float,  tabu_length : int, k_max : int, HC_max_iter, n_max):
     
     ########## Init variables #########
     
     # We start from a random point
     tabu_list = []
-    S_best = domain.get_random_element()
+    S_best = starting_point
     E_best = f_cost(S_best)
     L_neigh = domain.get_small_neighborhood(S_best)
     k = 0
@@ -72,19 +85,14 @@ def simulated_annealing(f_cost : Callable[[Element], BenchMarkValue], domain : D
 
 
 
-def basic_hill_climbing (f_cost : Callable[[Element], BenchMarkValue], domain : Domain, S_init : Element = None,  k_max : int = 10):
+def basic_hill_climbing (f_cost : Callable[[Element], BenchMarkValue], starting_point : Element, domain : Domain, temperature : float, temp_decrease_factor : float,  tabu_length : int, k_max : int, HC_max_iter, n_max):
     
     ########## Init variables #########
     
     # We start from a random point
-    
-    if S_init:
-        S_best = S_init
-    else: 
-        S_best = domain.get_random_element()
-        
+    S_best = starting_point
     E_best = f_cost(S_best)
-    L_neigh = domain.get_neighborhood(S_best)
+    L_neigh = domain.get_small_neighborhood(S_best)
     k = 0
     
     while k < k_max and len( L_neigh ) > 0:
@@ -100,15 +108,10 @@ def basic_hill_climbing (f_cost : Callable[[Element], BenchMarkValue], domain : 
     
     return S_best, E_best, k
         
-
-
-
-
-def VNS(f_cost, domain : Domain, HC_max_iter, n_max, global_max_iter, tabu_list_size):
+def VNS(f_cost, starting_point : Element, domain : Domain, temperature : float, temp_decrease_factor : float, tabu_list_size, global_max_iter, HC_max_iter, n_max):
   
-    S = domain.get_random_element()
+    S = starting_point
     BestScore = f_cost(S)
-    print("BestScore = ", BestScore)
     global_iter = 0
     while global_iter<global_max_iter:
         n = 1
@@ -117,7 +120,6 @@ def VNS(f_cost, domain : Domain, HC_max_iter, n_max, global_max_iter, tabu_list_
         previously_visited = []
         while n < n_max:
             # Shake: Get an element from the neighborhood extended by n
-            print("S: ", S)
             neighbors  = domain.VNS_neighborhood(S, previous_neighbors, n)
             
             for neighbor in neighbors:
@@ -137,26 +139,21 @@ def VNS(f_cost, domain : Domain, HC_max_iter, n_max, global_max_iter, tabu_list_
                     previously_visited.pop()
                     previously_visited.append(element)
               
-            print("cost_function = ", f_cost(S_prime))
             if f_cost(S_prime) < BestScore*0.62:
                 #Search: Find the best in the neighborhood of S_prime
-                S_prime_best, Local_BestScore, _ = basic_hill_climbing(f_cost, domain, S_prime, HC_max_iter)
+                S_prime_best, Local_BestScore, _ = basic_hill_climbing(f_cost, S_prime, domain, temperature, temp_decrease_factor, tabu_list_size, global_max_iter, HC_max_iter, n_max)
             else:
                 Local_BestScore = 0
-            print("Local_BestScore = ", Local_BestScore)
             if Local_BestScore < BestScore:
                 S = S_prime_best
                 BestScore = Local_BestScore
                 n = 1
                 previous_neighbors = []
-                print("New Best", BestScore)
             else:
               n += 1
-              print("n", n)
         if BestScore == current_score:
             break
         else:
             global_iter += 1
-            print("global_iter", global_iter)
               
     return S, BestScore, global_iter
