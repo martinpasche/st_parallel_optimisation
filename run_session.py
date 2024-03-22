@@ -1,5 +1,7 @@
 from optim_algo import retrieveMethod
 from utils import Element, Domain, cmdLineParsing, cost_function_benchmark
+import argparse
+import sys
 
 DefaultIterMax  = 100
 DefaultMethod   = "hc"
@@ -27,66 +29,66 @@ def cmdLineParsing(Me):
 
     if args.i <= 0:
         if Me == 0:
-        print("Error: maximum nb of iterations must be an integer greater than 0!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: maximum nb of iterations must be an integer greater than 0!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
     
     if args.m not in ("hc", "sa", "tsa", "vns", "random"):
         if Me == 0:
-        print("Error: local method must be in: [hc, sa, tsa, vns, random]!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: local method must be in: [hc, sa, tsa, vns, random]!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
         
     if args.seed < 0:
         if Me == 0:
-        print("Error: seed increase must be >= 0!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: seed increase must be >= 0!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
         
     if args.t0 <= 0:
         if Me == 0:
-        print("Error: initial temperature must be > 0!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: initial temperature must be > 0!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(1)
+            sys.exit(1)
 
     if args.la <= 0:
         if Me == 0:
-        print("Error: lambda parameter must be > 0!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: lambda parameter must be > 0!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
 
     if args.ltl <= 0:
         if Me == 0:
-        print("Error: length of Tabu list must be > 0!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: length of Tabu list must be > 0!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
     
     if args.cost not in ("time", "gflops", "mpoints"):
         if Me == 0:
-        print("Error: cost function must be in [time, gflops, mpoints]",file=sys.stderr)
-        sys.exit(0)
+            print("Error: cost function must be in [time, gflops, mpoints]",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
 
     if args.vnshcmax <= 0:
         if Me == 0:
-        print("Error: the number of iterations of HC must be > 0!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: the number of iterations of HC must be > 0!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
 
     if args.vnsndist <= 0:
         if Me == 0:
-        print("Error: distance to neighbors in VNS must be > 0!",file=sys.stderr)
-        sys.exit(0)
+            print("Error: distance to neighbors in VNS must be > 0!",file=sys.stderr)
+            sys.exit(0)
         else: 
-        sys.exit(0)
+            sys.exit(0)
     
     return args.i, args.m, args.seed, args.t0, args.la, args.ltl, args.cost, args.vnshcmax, args.vnsndist
 
