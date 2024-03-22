@@ -7,6 +7,9 @@ from mpi4py import MPI
 import mpi4py
 import random
 import re
+import argparse
+import numpy as np
+import time as tm
 
 class Element:
     
@@ -63,7 +66,6 @@ class BenchMarkValue:
         self.flops = float(flops)
         self.element = element
         self.is_error = False
-        self.k = 0
         self.check_error()
         
     def check_error (self):
@@ -71,7 +73,7 @@ class BenchMarkValue:
             self.is_error = True
     
     def __str__(self):
-        return f"time: " + str(f"{self.time:.2f}").ljust(5) + " s  |  throughput: " + str(f"{self.flops:.2f}").ljust(5) + " Mpoints/s  |  flops: " + str(f"{self.flops:.2f}").ljust(5) + " Gigaflops"
+        return f"time: " + str(f"{self.time:.2f}").ljust(5) + " s  |  throughput: " + str(f"{self.mpoints:.2f}").ljust(5) + " Mpoints/s  |  flops: " + str(f"{self.flops:.2f}").ljust(5) + " Gigaflops"
 
 
 
@@ -135,16 +137,22 @@ class Domain:
         
         blocked_index = (2, 4, 5, 6)
 
-        elements = []
+        elements_code = []
 
-        for i in range(10) :
-            if i not in blocked_index :
-                for incr in [-1, +1] :
-                    element_code_copy = element.code.copy()
-                    element_code_copy[i] += incr
-                    elements.append(self.get_element(element_code_copy))
-                
-        return list(filter( lambda x: x != None, elements))
+        for i in range(len(self.__variables)) :
+            if i in blocked_index :
+                continue
+
+            for incr in [-1, +1] :
+                element_code_copy = element.code.copy()
+                element_code_copy[i] += incr
+                if element_code_copy[i] >= 0 and element_code_copy[i] < len(self.__variables[i]) :
+                    elements_code.append(element_code_copy)
+        
+        #Remove duplicates
+        elements_code = map(lambda elem_code : list(elem_code), list(set(map(lambda elem_code : tuple(elem_code), elements_code))))
+        elements = list(map(lambda elem_code : self.get_element(elem_code), elements_code))
+        return elements
         
     
     def get_neighborhood(self, element):
@@ -179,8 +187,6 @@ class Domain:
         #print(elements_filtered)
         return elements_filtered
     
-    
-    
     def VNS_neighborhood(self, element : Element, previous_neighbors : List[Element] = [], k=1):
                 
         neighbors = self.get_small_neighborhood(element)
@@ -196,7 +202,6 @@ class Domain:
             
         neighbors = [x for x in neighbors if x not in previous_neighbors]
         return neighbors
-                
         
         
         
@@ -227,19 +232,6 @@ def get_mark_max_gflops (marks : List[BenchMarkValue] = None) -> BenchMarkValue:
         print(error)
         return None
     
-
-
-
-
-
-""" def cmdLineParsing ():
-    parser = argparse.ArgumentParser(description="Code for running parallel algorithms")
-    parser.add_argument( "--input-folder-path", help="Path to folder", default="iso3dfd-st7")
-    parser.add_argument( "--Olevel", help="Olevel to make the program", default="-O3")
-    parser.add_argument( "--input-file", help="file to run", default="Bsend.py")
-    parser.add_argument( "--simd", help="simd to make the program", default="avx2")
-    args = parser.parse_args()
-    return (args.input_folder_path, args.Olevel, args.simd, args.input_file) """
 
 
 
@@ -294,28 +286,16 @@ def get_output_info (result):
 
     return (float(match.group(i)) for i in range(1,4))
 
- 
-            
+
 def cmdRunIso (element : Element = None, process = 0, is_display : bool = False):
 
     #path = os.path.join("bin", f"iso3dfd_dev13_cpu_{element.simd}.exe")
     path = os.path.join("bin", f"iso3dfd_dev13_cpu{element.Olevel}_{element.simd}.exe")
     
-    cmd = path + " " \
-            + str(element.problem_size1) + " " + str(element.problem_size2) + " " + str(element.problem_size3) + " " \
-            + str(element.threads) + " " \
-            + str(element.iter) + " " \
-            + str(element.cache1) + " " + str(element.cache2) + " " + str(element.cache3)
-
-    flops = -1
-    iterations = 0
-    time = -1
-    while flops == -1 and iterations < 5:
-        if is_display:
-            display_element_process(element, process, "Running program")
-        result = subprocess.run(cmd, shell="True", stdout=subprocess.PIPE, text=True)
-        flops, mpoints, time = get_output_info(result)
-        iterations += 1
+    cmd = f"{path} {element.problem_size1} {element.problem_size2} {element.problem_size3} {element.threads} {element.iter} {element.cache1} {element.cache2} {element.cache3}"
+    result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, text=True)
+    #print(result.stdout)
+    time, mpoints, flops = get_output_info(result)
         
     mark = BenchMarkValue(time, mpoints, flops, element)
     display_element_process(element, process, mark)
