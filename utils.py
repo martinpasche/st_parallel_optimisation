@@ -30,7 +30,7 @@ class Element:
     def __str__(self):
         text = "[" + str(self.Olevel).ljust(7) + str(self.simd).ljust(7) \
             + str(self.problem_size1).ljust(4) + str(self.problem_size2).ljust(4) + str(self.problem_size3).ljust(4) \
-            + str(self.threads).ljust(3) \
+            + str(self.threads).ljust(4) \
             + str(self.iter).ljust(4) \
             + str(self.cache1).ljust(4) + str(self.cache2).ljust(4) + str(self.cache3).ljust(4) + "]"
         return text
@@ -38,7 +38,7 @@ class Element:
     def __repr__(self) -> str:
         text = "[" + str(self.Olevel).ljust(7) + str(self.simd).ljust(7) \
             + str(self.problem_size1).ljust(4) + str(self.problem_size2).ljust(4) + str(self.problem_size3).ljust(4) \
-            + str(self.threads).ljust(3) \
+            + str(self.threads).ljust(4) \
             + str(self.iter).ljust(4) \
             + str(self.cache1).ljust(4) + str(self.cache2).ljust(4) + str(self.cache3).ljust(4) + "]"
         return text
@@ -148,10 +148,11 @@ class Domain:
                 element_code_copy[i] += incr
                 if element_code_copy[i] >= 0 and element_code_copy[i] < len(self.__variables[i]) :
                     elements_code.append(element_code_copy)
-        
+
         #Remove duplicates
-        elements_code = map(lambda elem_code : list(elem_code), list(set(map(lambda elem_code : tuple(elem_code), elements_code))))
-        elements = list(map(lambda elem_code : self.get_element(elem_code), elements_code))
+        #elements_code = map(lambda elem_code : list(elem_code), list(set(map(lambda elem_code : tuple(elem_code), elements_code))))
+        elements = [self.get_element(elem_code) for elem_code in elements_code]
+        elements = list(filter(lambda x : x is not None, elements))
         return elements
         
     

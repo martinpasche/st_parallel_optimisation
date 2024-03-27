@@ -102,7 +102,7 @@ def basic_hill_climbing (f_cost : Callable[[Element], BenchMarkValue], starting_
         if E_1 < E_best:
             S_best = S_1
             E_best = E_1
-            L_neigh = domain.get_neighborhood(S_best)
+            L_neigh = domain.get_small_neighborhood(S_best)
             
         k += 1
     

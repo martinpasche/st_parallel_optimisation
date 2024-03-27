@@ -21,37 +21,7 @@ parameters = {
 ############################ INIT PROBLEM ###########################
 #####################################################################
 
-# We define the domain of the problema
-Olevel_list = ["-O3"]#, "-Ofast"]
-simd_list = ["avx512"]#, "avx2", "avx512", "sse"]
-problem_size_list1 = [256]
-problem_size_list2 = [256]
-problem_size_list3 = [256]
-cache1_list = list(range(16, 257, 16))
-cache2_list = list(range(1, 65, 1))
-cache3_list = list(range(1, 65, 1))
-iterations_list = [100]
-threads_list = list(range(1, 65))
-
-if Me == 0:
-    print("Domain:\n")
-    print("O level:", Olevel_list)
-    print("Simd:", simd_list)
-    print("Problem size 1:", problem_size_list1)
-    print("Problem size 2:", problem_size_list2)
-    print("Problem size 3:", problem_size_list3)
-    print("Cache 1:", cache1_list)
-    print("Cache 2:", cache2_list)
-    print("Cache 3:", cache3_list)
-    print("Iterations:", iterations_list)
-    print("Threads:", threads_list)
-    print("\n")
-
-
-
-domain = Domain( Olevel_list, simd_list, problem_size_list1, problem_size_list2, problem_size_list3, cache1_list, cache2_list, cache3_list, threads_list, iterations_list)
-
-run_session = RunSession(parameters, domain)
+run_session = RunSession(parameters)
 
 #####################################################################
 ############################### PROBLEM #############################
