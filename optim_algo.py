@@ -287,28 +287,17 @@ def VNS(f_cost, starting_point : Element, domain : Domain, temperature : float, 
     while global_iter<global_max_iter:
         n = 1
         current_score = BestScore
-        previous_neighbors = []
         previously_visited = []
         while n < n_max:
             # Shake: Get an element from the neighborhood extended by n
-            neighbors  = domain.VNS_neighborhood(S, previous_neighbors, n)
+            S_prime  = domain.VNS_neighbor(S, previously_visited,  n)
             
-            for neighbor in neighbors:
-                if neighbor not in previous_neighbors:
-                    previous_neighbors.append(neighbor)
-            
-            S_prime = random.choice(neighbors)
-            a = 0
-            while S_prime in previously_visited and a<7:
-                S_prime = random.choice(neighbors)
-                a += 1
+            #Idea: Exclude the points in S_prime's small neighborhood
             if len(previously_visited)<tabu_list_size:
-                for element in domain.VNS_neighborhood(S):
-                    previously_visited.append(element)
+                previously_visited.append(S_prime)
             else:
-                for element in domain.VNS_neighborhood(S):
-                    previously_visited.pop()
-                    previously_visited.append(element)
+                previously_visited.pop()
+                previously_visited.append(S_prime)
               
             if f_cost(S_prime) < BestScore*0.62:
                 #Search: Find the best in the neighborhood of S_prime
@@ -319,7 +308,6 @@ def VNS(f_cost, starting_point : Element, domain : Domain, temperature : float, 
                 S = S_prime_best
                 BestScore = Local_BestScore
                 n = 1
-                previous_neighbors = []
             else:
               n += 1
         if BestScore == current_score:

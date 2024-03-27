@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Comandos para correr mpi y ssh
 
 Para visualizar en VSC Ctrl+Shift+V

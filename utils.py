@@ -177,21 +177,26 @@ class Domain:
 
         return self.neighborhood_func(element)
     
-    def VNS_neighborhood(self, element : Element, previous_neighbors : List[Element] = [], k=1):
-                
+    def VNS_neighbor(self, element : Element, previous_neighbors : List[Element] = [], k=1):
+     
         neighbors = self.get_small_neighborhood(element)
+        previous_neighbors.append(element)
+        
+        #Choose a neighbor without going back to a previous neighbor
+        neighbor = previous_neighbors[0]
+        size = len(neighbors)
+        repetitions = 0
+        while neighbor in previous_neighbors:
+            neighbor = random.choice(neighbors)
+            repetitions += 1
+            if repetitions>2*size:
+                raise ValueError("Solution not found in list")
                     
         if k==1:
-            return neighbors
-        for neighbor in neighbors:
-            extended_neighbors = self.VNS_neighborhood(neighbor, [], k-1)
-            
-            for neighbor in extended_neighbors:
-                if neighbor not in neighbors:
-                    neighbors.append(neighbor)
-            
-        neighbors = [x for x in neighbors if x not in previous_neighbors]
-        return neighbors
+            return neighbor
+        #Recursion to find a (k-1)th neighbor of this new neighbor, which would be a kth neighbor of element, without going back
+        else:
+            return self.VNS_neighbor(neighbor, previous_neighbors, k-1)
         
         
         
