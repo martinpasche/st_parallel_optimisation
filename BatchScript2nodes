@@ -25,7 +25,7 @@ echo "============= TITLE OF MY BATCH ================="
 # Command to execute
 # ex : 8 processes distributed on 2 nodes: 2 per socket (i.e. 4 per node)
 
-/usr/bin/mpirun -np 8 -map-by ppr:2:socket:PE=4 -rank-by core python3 main.py
+/usr/bin/mpirun -np 8 -map-by ppr:1:node:PE=16 -rank-by core python3 main.py --i=600 --m=tsa --t0=10 --la=0.98 --ltl=10 --neighborhood=global
 
 # ex to test 4 processes on one node (no communications)
 #/usr/bin/mpirun -np 4 -map-by ppr:1:core:PE=1 -rank-by core python3 myappli.py args_of_my_appli

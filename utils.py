@@ -3,11 +3,8 @@ import subprocess
 import random
 from itertools import product
 from typing import List
-from mpi4py import MPI
-import mpi4py
 import random
 import re
-import argparse
 import numpy as np
 import time as tm
 
@@ -93,6 +90,9 @@ class Domain:
             cache2_list,
             cache3_list
         ]
+
+    def get_variables(self) :
+        return self.__variables
         
     def get_random_element (self) -> Element:
         indexes = []
@@ -121,6 +121,11 @@ class Domain:
             # print(error)
             return None
 
+    def get_global_neighborhood(self, element) :
+        neighbors = self.get_small_neighborhood(element)
+        rd_neighbors = [self.get_random_element() for _ in range(len(neighbors))]
+        return neighbors+rd_neighbors
+
     def get_small_neighborhood(self, element) :
         """ 
         index 0: Olevel 
@@ -140,7 +145,7 @@ class Domain:
         elements_code = []
 
         for i in range(len(self.__variables)) :
-            if i in blocked_index :
+            if i in blocked_index or len(self.__variables[i]) <= 1 :
                 continue
 
             for incr in [-1, +1] :
@@ -170,23 +175,7 @@ class Domain:
         index 9: cache3
         """
 
-        element_code = element.code
-        possible_codes = []
-        blocked_index = (2, 4, 5, 6)
-        
-        for i in range(10):
-            if i not in blocked_index:
-                possible_codes.append([element_code[i] - 1, element_code[i], element_code[i] + 1])
-            else:
-                possible_codes.append([element_code[i]])
-                
-        combinations = list(product(*possible_codes))
-        
-        elements = list( map( lambda combination: self.get_element(combination), combinations ))
-        elements_filtered = list(filter( lambda x: x != None and x.code == element.code, elements))
-        
-        #print(elements_filtered)
-        return elements_filtered
+        return self.neighborhood_func(element)
     
     def VNS_neighborhood(self, element : Element, previous_neighbors : List[Element] = [], k=1):
                 
@@ -286,7 +275,6 @@ def get_output_info (result):
     match = re.search(SEARCH_PATTERN, data)
 
     return (float(match.group(i)) for i in range(1,4))
-
 
 def cmdRunIso (element : Element = None, process = 0, is_display : bool = False):
 

@@ -22,7 +22,7 @@ DefaultSeed     = 100
 DefaultT0       = 100.0
 DefaultLa       = 0.9
 DefaultLtl      = 10
-DefaultCostFunc = "time"
+DefaultCostFunc = "gflops"
 DefaultVNSHCMax = 50
 DefaultVNSNeighborDistance = 9
 DefaultDOlevel = "-O3,-Ofast"
@@ -32,8 +32,8 @@ DefaultThreads = "1:64"
 def cmdLineParsing(Me):
     parser = argparse.ArgumentParser()
     parser.add_argument("--i", help="maximum nb of iterations per method", default=DefaultIterMax, type=np.int32)
-    parser.add_argument("--m", help="local method (hc, sa, tsa, vns, random)", default=DefaultMethod)
-    parser.add_argument("--seed", help="automatic increase of the seed (of random gen.) on each process", default=DefaultSeed, type=np.int32)
+    parser.add_argument("--m", help="local method (hc, sa, tsa, vns, random, info)", default=DefaultMethod)
+    #parser.add_argument("--seed", help="automatic increase of the seed (of random gen.) on each process", default=DefaultSeed, type=np.int32)
     parser.add_argument("--t0", help="initial temperature t0", default=DefaultT0, type=np.float64)
     parser.add_argument("--la", help="lambda parameter of temperature law", default=DefaultLa, type=np.float64)
     parser.add_argument("--ltl", help="length of Tabu list", default=DefaultLtl, type=np.int32)
@@ -43,7 +43,8 @@ def cmdLineParsing(Me):
     parser.add_argument("--dolevel", help="set domain possible Olevels (-O3,-Ofast) -> separate different values with commas", default=DefaultDOlevel)
     parser.add_argument("--dsimd", help="set domain possible simd (avx,avx2,avx16,avx512,sse) -> separate different values with commas", default=DefaultDsimd)
     parser.add_argument("--dthreads", help="set domain possible range of threads number (1:64)", default=DefaultThreads)
-    parser.add_argument("--start", help="set starting point of paths", default="")
+    parser.add_argument("--start", help="set starting point of paths (example -O3,avx512,256,256,256,64,100,128,7,7)", default="")
+    parser.add_argument("--neighborhood", help="set neighborhood function (small, global)", default="small")
     
     args = parser.parse_args()
 
@@ -52,14 +53,9 @@ def cmdLineParsing(Me):
             print("Error: maximum nb of iterations must be an integer greater than 0!",file=sys.stderr)
         sys.exit(0)
     
-    if args.m not in ("hc", "sa", "tsa", "vns", "random"):
+    if args.m not in ("hc", "sa", "tsa", "vns", "random", "info"):
         if Me == 0:
-            print("Error: local method must be in: [hc, sa, tsa, vns, random]!",file=sys.stderr)
-        sys.exit(0)
-        
-    if args.seed < 0:
-        if Me == 0:
-            print("Error: seed increase must be >= 0!",file=sys.stderr)
+            print("Error: local method must be in: [hc, sa, tsa, vns, random, info]!",file=sys.stderr)
         sys.exit(0)
         
     if args.t0 <= 0:
@@ -90,6 +86,11 @@ def cmdLineParsing(Me):
     if args.vnsndist <= 0:
         if Me == 0:
             print("Error: distance to neighbors in VNS must be > 0!",file=sys.stderr)
+        sys.exit(0)
+
+    if args.neighborhood not in ['small', 'global'] :
+        if Me == 0:
+            print("Error: neighborhood must be in [global, small] !",file=sys.stderr)
         sys.exit(0)
 
     possibleOlevels = args.dolevel.strip("[]() ").split(",")
@@ -130,7 +131,7 @@ def cmdLineParsing(Me):
         reorder = [start_array[0], start_array[1], start_array[6], start_array[5], start_array[2], start_array[3], start_array[4], start_array[7], start_array[8], start_array[9]]
         start_array.append([array.index(reorder[i]) for i,array in enumerate([possibleOlevels, possiblesimds, iterations_list, possibleThreads, problem_size_list1, problem_size_list2, problem_size_list3, cache1_list, cache2_list, cache3_list])])
     
-    return args.i, args.m, args.seed, args.t0, args.la, args.ltl, args.cost, args.vnshcmax, args.vnsndist, (possibleOlevels, possiblesimds, possibleThreads), start_array
+    return args.i, args.neighborhood, args.m, args.t0, args.la, args.ltl, args.cost, args.vnshcmax, args.vnsndist, (possibleOlevels, possiblesimds, possibleThreads), start_array
 
 class RunSession :
     def __init__(self, parameters : dict) :
@@ -138,33 +139,40 @@ class RunSession :
         self.is_display = parameters["is_display"]
         self.folder_path = parameters["folder_path"]
         self.parameters = parameters
-        self.k_max, self.method_str, self.SeedInc, self.temperature, self.temp_decrease_factor, self.tabu_length, self.cost_func_str, self.vnshcmax, self.vnsndist, possibleDomains, start = cmdLineParsing(self.process)
+        self.k_max, self.neighborhood_str, self.method_str, self.temperature, self.temp_decrease_factor, self.tabu_length, self.cost_func_str, self.vnshcmax, self.vnsndist, possibleDomains, start = cmdLineParsing(self.process)
+        self.possibleDomains = possibleDomains
         self.domain = Domain(possibleDomains[0], possibleDomains[1], problem_size_list1, problem_size_list2, problem_size_list3, cache1_list, cache2_list, cache3_list, possibleDomains[2], iterations_list)
 
         self.setMethod(self.method_str)
         self.setCostFunction(self.cost_func_str)
         self.setStartingPoint(self.domain, start)
-        
-        if self.process == 0:
-            print("Domain:\n")
-            print("O level:", possibleDomains[0])
-            print("Simd:", possibleDomains[1])
-            print("Problem size 1:", problem_size_list1)
-            print("Problem size 2:", problem_size_list2)
-            print("Problem size 3:", problem_size_list3)
-            print("Cache 1:", cache1_list)
-            print("Cache 2:", cache2_list)
-            print("Cache 3:", cache3_list)
-            print("Iterations:", iterations_list)
-            print("Threads:", possibleDomains[2])
-            print("\n")
+        self.setNeighborhoodFunc(self.neighborhood_str)
 
     def __call__(self) :
-        self.display()
+        if self.process == 0 :
+            self.display()
         return self.method(self.cost_function, self.starting_point, self.domain, self.temperature, self.temp_decrease_factor, self.tabu_length, self.k_max, self.vnshcmax, self.vnsndist)
 
     def display(self) :
+        print("Domain:\n")
+        print("O level:", self.possibleDomains[0])
+        print("Simd:", self.possibleDomains[1])
+        print("Problem size 1:", problem_size_list1)
+        print("Problem size 2:", problem_size_list2)
+        print("Problem size 3:", problem_size_list3)
+        print("Cache 1:", cache1_list)
+        print("Cache 2:", cache2_list)
+        print("Cache 3:", cache3_list)
+        print("Iterations:", iterations_list)
+        print("Threads:", self.possibleDomains[2])
+        print("\n")
         print(f"Currently running on {self.method_str}") 
+
+    def setNeighborhoodFunc(self, neighbor_str) :
+        if neighbor_str == "global" :
+            self.domain.neighborhood_func = self.domain.get_global_neighborhood
+        else :
+            self.domain.neighborhood_func = self.domain.get_small_neighborhood
 
     def setStartingPoint(self, domain, start) :
         if len(start) == 1 :
